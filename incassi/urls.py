@@ -8,7 +8,8 @@ from .views import (
 app_name = 'incassi'
 
 urlpatterns = [
-    path("", views.HomeView.as_view(), name="homepage"),
+    #path("", views.HomeView.as_view(), name="homepage"),
+    path("", views.HomeView, name="homepage"),
     path('incassi/lista/', IncassoList.as_view(), name='list_incassi'),
     path('incassi/crea/', IncassoCreate.as_view(), name='crea_incasso'),
     path('incassi/update/<int:pk>/', IncassoUpdate.as_view(), name='update_incasso'),

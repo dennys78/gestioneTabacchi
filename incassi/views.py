@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic.list import ListView
 from django.views.generic.edit import (CreateView, UpdateView)
 from django.db.models import Sum
+from calendar import month_name
 
 
 from .forms import (
@@ -132,15 +133,21 @@ class IncassoList(ListView):
     model = Incasso
     template_name = "incassi/list_incassi.html"
     context_object_name = "incassi"
+    def get_queryset(self):
+        mese = self.request.GET.get('mese')
+        queryset = Incasso.objects.all()
+        if mese == '5':  # Controlla se il mese è esattamente '5'
+            queryset = queryset.filter(data__month=mese)
+        return queryset
 
 class UserList(LoginRequiredMixin, ListView):
     model = User
     template_name = ''
 
-class HomeView(ListView):
-    model = Incasso
-    template_name = "incassi/list_incassi.html"
-    context_object_name = "incassi"
-    def get_queryset(self):
-        # Ordina gli oggetti per data in ordine decrescente (i dati più recenti per primi)
-        return Incasso.objects.order_by('data')
+def HomeView(request):
+    mese = request.GET.get('mese')
+    queryset = Incasso.objects.all()
+    if mese:
+        queryset = queryset.filter(data__month=mese)
+    context = {'incassi': queryset}
+    return render(request, 'incassi/list_incassi.html', context)

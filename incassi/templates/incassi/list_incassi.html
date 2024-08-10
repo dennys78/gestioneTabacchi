@@ -7,6 +7,25 @@
     <div class="card" width="300px">
         <div class="card-header card-header-secondary">
             <h4 class="card-title">Elenco incassi</h4>
+            <form method="get">
+                <label for="mese_selezionato">Seleziona un mese:</label>
+                <select name="mese" id="mese_selezionato">
+                    <option value="">Tutti</option>
+                    <option value="1">Gennaio</option>
+                    <option value="2">Febbraio</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Aprile</option>
+                    <option value="5">Maggio</option>
+                    <option value="6">Giugno</option>
+                    <option value="7">Luglio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Settembre</option>
+                    <option value="10">Ottobre</option>
+                    <option value="11">Novembre</option>
+                    <option value="12">Dicembre</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filtra</button>
+            </form>
         </div>
     
         <table class="table">
@@ -18,22 +37,17 @@
             </thead>
 
             <tbody>  
-            {% for i in incassi %}
-
+            {% for incasso in incassi %}
                 <tr> 
-                    <td> {{ i.data }}  </td>
-                    <td> {{ i.descrizione }}  </td>
+                    <td> {{ incasso.data }}  </td>
+                    <td> {{ incasso.descrizione }}  </td>
                     <td> 
-                        <a href="{% url 'incassi:update_incasso' i.id %}" class="btn btn-primary"> Modifica </a>
+                        <a href="{% url 'incassi:update_incasso' incasso.id %}" class="btn btn-primary"> Modifica </a>
                     </td>
                     <td> 
-                        <a href="{% url 'incassi:delete_incasso' i.id %}" class="btn btn-danger"> Elimina </a>
+                        <a href="{% url 'incassi:delete_incasso' incasso.id %}" class="btn btn-danger"> Elimina </a>
                     </td>
-                </tr>
-                
-                    
-                
-                
+                </tr>                             
             {% endfor %}
             </tbody>
         </table>

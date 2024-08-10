@@ -249,7 +249,7 @@
     var totUscite = sum;
     var totCassa = totEntrate - totUscite;
     var presunto = document.getElementById('g_incassoPresunto').value;
-    var differenza = totCassa - presunto;
+    var differenza = presunto - totCassa;
 
     document.getElementById('g_totaleCassa').value = totCassa.toFixed(2);
    
