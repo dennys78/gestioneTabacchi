@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if request.user.is_authenticated %}        
+    <p></p>
+    <div class="card" width="300px">
+        <div class="card-header card-header-secondary">
+            <h4 class="card-title">Elenco incassi</h4>
+        </div>
+    
+        <table class="table">
+            <thead class="">
+                <th>Data</th>
+                <th>Differenza</th>
+                <th>Modifica</th>
+                <th>Elimina</th>
+            </thead>
+
+            <tbody>  
+            {% for i in incassi %}
+
+                <tr> 
+                    <td> {{ i.data }}  </td>
+                    <td> {{ i.descrizione }}  </td>
+                    <td> 
+                        <a href="{% url 'incassi:update_incasso' i.id %}" class="btn btn-primary"> Modifica </a>
+                    </td>
+                    <td> 
+                        <a href="{% url 'incassi:delete_incasso' i.id %}" class="btn btn-danger"> Elimina </a>
+                    </td>
+                </tr>
+                
+                    
+                
+                
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p></p>
+    <div class="alert alert-info" role="alert">
+            Devi effettuare il <a href="{% url 'login' %}?next={{ request.get_full_path }}">login...</a>
+    </div>
+{% endif %}
+
+{% endblock content %}
+
+<!-- product_list.html  <a href="{% url 'incassi:update_incasso' i.id %}"> {{ i.data }}</a> {{ i.descrizione }}
+                    <a href="{% url 'incassi:delete_incasso' i.id %}"> Elimina </a> 
+                <a href="{% url 'incassi:delete_incasso' i.id %}"> Elimina </a> -->

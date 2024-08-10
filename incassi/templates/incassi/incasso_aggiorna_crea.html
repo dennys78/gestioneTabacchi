@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p></p>
+{% if request.user.is_authenticated %}
+<form enctype="multipart/form-data" class="container" method="post" id="incasso_form">
+    {% csrf_token %}
+    <!-- main form start --- in our case product form -->
+    <div class="card" style="max-width: 100%;">
+        <div class="card-header">
+            <h4 class="card-title">Chiusura giornaliera</h4>
+        </div>
+        {% for field in form %}
+            <div class="card-body p-2">
+                
+            {% if field.name == "incassoPresunto" %}
+                <label for="{{ form.id_for_label }}">Incasso riportato sul terminale</label>
+                <div class="input-group mb-0">
+                    {{field}}
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" type="button" onclick="calcolaTotale(this)">Ricalcola</button>
+                    </div>
+                </div>
+
+            {% else %}
+                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>       
+                {{field}}
+            {% endif %}       
+                {% if field.help_text %}
+                    <small style="color: grey">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                {% endfor %}
+                
+            </div>
+        {% endfor %}
+    </div>
+
+    {% with named_formsets.images as formset %}  
+        {{ formset.management_form }}
+        <script type="text/html" id="images-template">   // id="inlineformsetname-template"
+            <tr id="images-__prefix__" class= hide_all>  // id="inlineformsetname-__prefix__"
+                {% for fields in formset.empty_form.hidden_fields %}
+                    {{ fields }}
+                {% endfor %}
+            
+                {% for fields in formset.empty_form.visible_fields %}
+                    <td>{{fields}}</td>
+                {% endfor %}
+            </tr>
+        </script>
+
+        <div class="table-responsive card mt-4" style="max-width: 100%;">
+            <div class="card-header card-header-secondary">
+                <h4 class="card-title">Aggiungi immagini report</h4>
+            </div>
+            <table class="table card-body">
+                <thead class="text-secondary">
+                    <th>Immagine <span style="color: red;" class="required">*</span></th>
+                    <th>Seleziona?</th>
+                    <th>Elimina</th>
+                </thead>
+                <tbody id="item-images">  <!-- id="item-inlineformsetname" -->
+                    <!-- formset non forms errors -->
+                    {% for error in formset.non_form_errors %}
+                        <span style="color: red">{{ error }}</span>
+                    {% endfor %}
+                    {% for formss in formset %}
+                        {{ formss.management_form }}
+                        <tr id="images-{{ forloop.counter0 }}" class= hide_all>  <!-- id="inlineformsetname-counter" -->
+                            {{ formss.id }}
+                            {% for field in formss.visible_fields %}
+                                <td>
+                                    {{field}}
+                                    {% for error in field.errors %}
+                                        <span style="color: red">{{ error }}</span>
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                            <!-- delete code -->
+                            {% if formss.instance.pk %}
+                                <td>
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal{{formss.instance.pk}}">
+                                        Delete
+                                    </button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModal{{formss.instance.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{formss.instance.pk}}" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel{{formss.instance.pk}}">Are Your Sure You Want To Delete This?</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <a href="{% url 'incassi:delete_image' formss.instance.pk %}" type="button" class="btn btn-primary">Yes, Delete</a>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </td>            
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="#" id="add-image-button" class="btn btn-secondary add-images">Add More</a> <!-- id="add-inlineformsetname-button" -->
+        </div>
+    {% endwith %}
+ 
+    <!-- EXPLAINING with named_formsets.variants as formset -->
+    <!-- Note: named_formsets is used in get_context_data function in views.py -->
+    <!-- Note: here variants is our VariantFormSet name, used in get_named_formsets function in views.py -->
+    {% with named_formsets.dettagli as formset %}
+        {{ formset.management_form }}
+        <script type="text/html" id="dettagli-template">  // id="inlineformsetname-template"
+            <tr id="dettagli-__prefix__" class= hide_all>
+                {% for fields in formset.empty_form.hidden_fields %}
+                    {{ fields }}
+                {% endfor %}
+            
+                {% for fields in formset.empty_form.visible_fields %}
+                    <td>{{fields}}</td>
+                {% endfor %}
+            </tr>
+        </script>
+
+        <div class="table-responsive card mt-4" style="max-width: 100%;">
+            <div class="card-header card-header-secondary">
+                <h4 class="card-title">Aggiungi dettagli incasso</h4>
+            </div>
+            <table class="table card-header">
+                <thead class="text-secondary">
+                    <th>Tipo movimento</th>
+                    <th>Entrata</th>
+                    <th>Uscita</th>
+                    <th>Elimina</th>
+                </thead>
+                <tbody id="item-dettagli"> 
+                    <!-- formset non forms errors -->
+                    {% for error in formset.non_form_errors %}
+                        <span style="color: red">{{ error }}</span>
+                    {% endfor %}
+                    {% for formss in formset %}
+                        {{ formss.management_form }}
+                        <tr id="dettagli-{{ forloop.counter0 }}" class= hide_all>  <!-- id="inlineformsetname-counter" -->
+                            {{ formss.id }}
+                            {% for field in formss.visible_fields %}
+                                <td>
+                                    {{field}}
+                                    {% for error in field.errors %}
+                                        <span style="color: red">{{ error }}</span>
+                                    {% endfor %}
+                                    
+                                    {% comment %} {{ field.DELETE }} {% endcomment %}
+                                </td>
+                            {% endfor %}
+                            {% comment %} for delete {% endcomment %}
+                            {% if formss.instance.pk %}
+                                <td>
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal{{formss.instance.pk}}">
+                                        Elimina
+                                    </button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModal{{formss.instance.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{formss.instance.pk}}" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel{{formss.instance.pk}}">Sei sicuro di voler eliminare il seguente campo?</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <a href="{% url 'incassi:delete_dettaglio' formss.instance.pk %}" type="button" class="btn btn-primary">Conferma, Elimina</a>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </td>            
+                            {% endif %}
+                        </tr>                     
+                    {% endfor %}
+                </tbody>
+            </table>        
+            <a href="#" id="add-dettagli-button" class="btn btn-secondary add-dettagli">Aggiungi rigo</a> <!-- id="add-inlineformsetname-button" -->
+            <p></p>
+            <button type="submit" class="btn btn-secondary btn-block">Salva ed Esci</button>
+        </div> 
+
+        {% endwith %}
+        
+        <div class="form-group">
+            
+        </div>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+
+<script>
+    $(document).ready(function() {
+        // when user clicks add more btn of images
+      $('.add-images').click(function(ev) {
+          ev.preventDefault();
+          var count = $('#item-images').children().length;
+          var tmplMarkup = $('#images-template').html();
+          var compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
+          $('#item-images').append(compiledTmpl);
+  
+          // update form count
+          $('#id_images-TOTAL_FORMS').attr('value', count+1);
+      });
+  });
+
+  $(document).ready(function() {
+    // when user clicks add more btn of variants
+      $('.add-dettagli').click(function(ev) {
+          ev.preventDefault();
+          var count = $('#item-dettagli').children().length;
+          var tmplMarkup = $('#dettagli-template').html();
+          var compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
+          $('#item-dettagli').append(compiledTmpl);
+  
+          // update form count
+          $('#id_dettagli-TOTAL_FORMS').attr('value', count+1);
+      });
+  });
+  
+
+  function calcolaTotale(v){
+    var sum=0;
+    //var index = index + ($(v).parent().parent().index());
+    var righi = $('#id_dettagli-TOTAL_FORMS').attr('value');
+
+    for (let index = 0; index < righi; index++){
+        var valore = document.getElementById('id_dettagli-'+index+'-entrata').value;
+        sum = +(sum)+ +(valore);
+    }
+    var totEntrate = sum;
+    sum = 0;
+    for (let index = 0; index < righi; index++){
+        var valore = document.getElementById('id_dettagli-'+index+'-uscita').value;
+        sum = +(sum)+ +(valore);
+    }
+    var totUscite = sum;
+    var totCassa = totEntrate - totUscite;
+    var presunto = document.getElementById('g_incassoPresunto').value;
+    var differenza = totCassa - presunto;
+
+    document.getElementById('g_totaleCassa').value = totCassa.toFixed(2);
+   
+    if (differenza > 0) {
+        document.getElementById('descrizioneId').value = "" + differenza.toFixed(2)+"€";
+
+    } else {
+        document.getElementById('descrizioneId').value = "" + differenza.toFixed(2)+"€";
+    }
+   
+  }
+
+
+</script>
+
+{% else %}
+    <p></p>
+    <div class="alert alert-info" role="alert">
+            Devi effettuare il <a href="{% url 'login' %}?next={{ request.get_full_path }}">login...</a>
+    </div>
+{% endif %}
+        
+{% endblock content %}
+
+
