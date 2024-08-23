@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if request.user.is_authenticated %}        
+    <p></p>
+    <div class="card" width="300px">
+        <div class="card-header card-header-secondary">
+            
+            <form method="get">
+                <div class="container text-center">
+                    <div class="row">
+                        <div class="col">
+                           <h4 class="card-title">Elenco incassi</h4>
+                            <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" name="mese" id="mese_selezionato">
+                                {% for mese_num, mese_nome in mesi.items %}
+                                    <option value="{{ mese_num }}" >
+                                        {{ mese_nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                      
+                            <button type="submit" class="btn btn-primary">Filtra</button>
+                        
+                    </div>
+                </div>
+            </form>
+        </div>
+    
+        <table class="table">
+            <thead class="">
+                <th>Data</th>
+                <th>Differenza</th>
+                <th>Modifica</th>
+                <th>Elimina</th>
+            </thead>
+
+            <tbody>  
+            {% for incasso in incassi %}
+                <tr> 
+                    <td> {{ incasso.data }}  </td>
+                    <td> {{ incasso.descrizione }}  </td>
+                    <td> 
+                        <a href="{% url 'incassi:update_incasso' incasso.id %}" class="btn btn-primary"> Modifica </a>
+                    </td>
+                    <td> 
+                        <a href="{% url 'incassi:delete_incasso' incasso.id %}" class="btn btn-danger"> Elimina </a>
+                    </td>
+                </tr>                             
+            {% endfor %}
+            </tbody>
+        </table>
+        <div>
+            <h4>Totale Differenza: {{ totale }}</h4>
+        </div>
+    </div>
+{% else %}
+    <p></p>
+    <div class="alert alert-info" role="alert">
+            Devi effettuare il <a href="{% url 'login' %}?next={{ request.get_full_path }}">login...</a>
+    </div>
+{% endif %}
+
+{% endblock content %}
+

@@ -7,7 +7,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import (CreateView, UpdateView)
 from django.db.models import Sum
 from calendar import month_name
-
+from django.utils import timezone
 
 from .forms import (
     IncassoForm, DettagliFormSet, ImageFormSet
@@ -133,21 +133,50 @@ class IncassoList(ListView):
     model = Incasso
     template_name = "incassi/list_incassi.html"
     context_object_name = "incassi"
+    
     def get_queryset(self):
+        mese_corrente = timezone.now().month
+        # Ottieni il parametro 'mese' dalla richiesta GET o usa il mese corrente come predefinito
         mese = self.request.GET.get('mese')
+        
+        if mese is None:  # Se non c'è parametro mese, usa il mese corrente
+            mese = mese_corrente
+        else:
+            mese = int(mese)  # Converte il valore di mese in un numero intero
+
         queryset = Incasso.objects.all()
-        if mese == '5':  # Controlla se il mese è esattamente '5'
+        
+        # Filtra il queryset per il mese specificato
+        if int(mese) != 0:
             queryset = queryset.filter(data__month=mese)
+        
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Aggiungi la lista dei mesi al contesto per il template
+        context['mesi'] = {
+            0: 'Tutti',
+            1: 'Gennaio', 2: 'Febbraio', 3: 'Marzo', 4: 'Aprile',
+            5: 'Maggio', 6: 'Giugno', 7: 'Luglio', 8: 'Agosto',
+            9: 'Settembre', 10: 'Ottobre', 11: 'Novembre', 12: 'Dicembre'
+        }
+        context['mese_corrente'] = timezone.now().month
+
+        mese_corrente = timezone.now().month
+        
+        # Ottieni il parametro 'mese' dalla richiesta GET o usa il mese corrente come predefinito
+        mese = self.request.GET.get('mese', mese_corrente)
+        
+        # Calcola la somma del campo 'differenza'
+        totale = Incasso.objects.filter(data__month=mese).aggregate(Sum('descrizione'))['descrizione__sum'] or 0
+        print(totale)
+        
+        # Aggiungi il totale al contesto
+        context['totale'] = totale
+
+        return context
 
 class UserList(LoginRequiredMixin, ListView):
     model = User
     template_name = ''
-
-def HomeView(request):
-    mese = request.GET.get('mese')
-    queryset = Incasso.objects.all()
-    if mese:
-        queryset = queryset.filter(data__month=mese)
-    context = {'incassi': queryset}
-    return render(request, 'incassi/list_incassi.html', context)
