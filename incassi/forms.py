@@ -9,15 +9,13 @@ from .models import (
 
 
 class IncassoForm(forms.ModelForm):
-
-    totaleCassa = forms.DecimalField(label='Totale Cassa', widget=forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control', 'id': 'g_totaleCassa', 'readonly': 'readonly' }))
+    #totaleCassa = forms.DecimalField(label='Totale Cassa', widget=forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control', 'id': 'g_totaleCassa', 'readonly': 'readonly' }))
     descrizione = forms.CharField(label='Esito controllo', widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'descrizioneId', 'readonly': 'readonly' }))
 
     class Meta: 
         model = Incasso
-        fields = ['data', 'descrizione', 'totaleCassa', 'incassoPresunto']
+        fields = ['data', 'descrizione', 'incassoPresunto']
 
-        
         widgets = {
             'data': forms.DateInput(
                 format=('%Y-%m-%d'),
@@ -34,8 +32,6 @@ class IncassoForm(forms.ModelForm):
                 }
             ),
         }
-
-        
 
 
 class ImageForm(forms.ModelForm):
@@ -82,3 +78,9 @@ ImageFormSet = inlineformset_factory(
     extra=1, can_delete=True,
     can_delete_extra=False
 )
+
+
+class FilterForm(forms.Form):
+    start_date = forms.DateField(widget=forms.SelectDateWidget, label="Data Inizio")
+    end_date = forms.DateField(widget=forms.SelectDateWidget, label="Data Fine")
+    movimento = forms.ModelChoiceField(queryset=descMovimenti.objects.all(), label="Movimento")
