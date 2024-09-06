@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <form method="get" class="form-inline">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Filtra</button>
+    </form>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Data Incasso</th>
+                <th>Movimento</th>
+                <th>Entrata</th>
+                <th>Uscita</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dettaglio in dettagli_list %}
+            <tr>
+                <td>{{ dettaglio.incasso.data }}</td>
+                <td>{{ dettaglio.movimento.descrizione }}</td>
+                <td class="text-right">{{ dettaglio.entrata }}</td>
+                <td class="text-right">{{ dettaglio.uscita }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}
